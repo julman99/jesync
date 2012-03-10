@@ -1,0 +1,47 @@
+JESync Alpha 0.1 Protocol Specification
+Author: Julio Viera
+
+The protocol is a simple ASCII protocol inspired on projects like memcached or 
+beanstalkd
+
+--------------------
+1. Requesting a lock
+--------------------
+
+lock <lock_key> <max_concurrent> <timeout>
+
+lock_key:       Any string (no spaces) representing the lock key
+
+max_concurrent: Max number of concurrent request allowed to run simultaneously
+                with the one being requested
+
+timeout:        (NOT SUPPORTED YET) Specifies the maximum time to wait for the
+                lock to be granted
+
+
+Response: 
+GRANTED <concurrent>
+
+concurrent:     Number of concurrent request accessing the lock including the 
+                current one
+
+
+--------------------
+2.Releasing a lock
+--------------------
+
+release <lock_key>
+
+lock_key:       Any string (no spaces) representing the locked key to be
+                released
+
+
+Response:
+If the lock was locked by the current connection
+RELEASED <concurrent>
+
+concurrent:     Number of concurrent request accesing the lock BEFORE the 
+                current request released it
+
+If the lock was not locked by the current connection
+NOT_RELEASED
