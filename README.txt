@@ -1,4 +1,4 @@
-JESync Alpha .1 
+JESync Alpha 0.1 
 Author: Julio Viera
 
 
@@ -27,7 +27,7 @@ The current release roadmap is the following:
 
 Late March 2012:    - Implement the PHP driver
                     - Put JESync on production replacing a memcache spinlock 
-                      algorithm currently wich currently handles more than 100000
+                      algorithm wich currently handles more than 100000
                       request per minute
 
 Mid April 2012:     - Release version 1.0
@@ -36,10 +36,16 @@ Mid April 2012:     - Release version 1.0
 3. Backlog
 ----------------------------
 - Add timeout support
+- Implement PHP driver
 - Add Unit Testing suite
+- Improve protocol parsing engine, detect errors and provide feedback
 - Develop the Java JESync Client driver
 - Test on several Linux, Mac and Windows distributions
 - Test and profile on high concurrency environments.
 - Develop drivers for other languages than PHP and Java
 
 1.0 Release date is expected to be somewhere in mid-april.
+
+
+4. Dependencies
+- http://netty.io/
