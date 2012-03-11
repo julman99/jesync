@@ -37,6 +37,9 @@ Mid April 2012:     - Release version 1.0
 ----------------------------
 - Add timeout support
 - Add Unit Testing suite
+- Develop the Java JESync Client driver
 - Test on several Linux, Mac and Windows distributions
+- Test and profile on high concurrency environments.
+- Develop drivers for other languages than PHP and Java
 
 1.0 Release date is expected to be somewhere in mid-april.
