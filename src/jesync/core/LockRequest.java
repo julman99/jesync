@@ -12,10 +12,9 @@ public interface LockRequest {
     /**
      * Called by the Lock class when a lock has been granted
      * @param lock Handle used to release the lock
-     * @param concurrent Number of concurrent request using the lock including
      * the one represented by the handle
      */
-    void lockGranted(LockHandle lock,int concurrent);
+    void lockGranted(LockHandle lockHandle);
     
     /**
      * Called by the Lock class when a timeout has been reached
@@ -37,4 +36,12 @@ public interface LockRequest {
      * at the same time with the current request
      */
     int getMaxConcurrent();
+    
+    
+    /**
+     * Called by the Lock class to know whats the max number of seconds this
+     * request is willing to wait for the lock to be granted.
+     * Note: -1 means unlimited
+     */
+    int getTimeout();
 }

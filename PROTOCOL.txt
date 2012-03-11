@@ -4,6 +4,7 @@ Author: Julio Viera
 The protocol is a simple ASCII protocol inspired on projects like memcached or 
 beanstalkd
 
+
 --------------------
 1. Requesting a lock
 --------------------
@@ -20,11 +21,7 @@ timeout:        (NOT SUPPORTED YET) Specifies the maximum time to wait for the
 
 
 Response: 
-GRANTED <concurrent>
-
-concurrent:     Number of concurrent request accessing the lock including the 
-                current one
-
+GRANTED <lockKey_status>
 
 --------------------
 2.Releasing a lock
@@ -38,10 +35,22 @@ lock_key:       Any string (no spaces) representing the locked key to be
 
 Response:
 If the lock was locked by the current connection
-RELEASED <concurrent>
-
-concurrent:     Number of concurrent request accesing the lock BEFORE the 
-                current request released it
+RELEASED <lockKey_status>
 
 If the lock was not locked by the current connection
-NOT_RELEASED
+NOT_RELEASED <lockKey_status>
+
+--------------------
+3. Lock key status
+--------------------
+The lock key status is written by the server when responding to any lock key
+related request. The format is the following
+
+<concurrent> <waiting> <lockKey>
+
+concurrent:     Number of concurrent request currently accesing the lock
+
+Waiting:        Number of request waiting to access the lock
+
+lockkey:        The lock key
+

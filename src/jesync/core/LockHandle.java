@@ -15,12 +15,16 @@ public final class LockHandle {
         return lock.getLockKey();
     }
 
+    public Lock getLock() {
+        return lock;
+    }
+
     LockHandle(Lock lock, LockRequest request) {
         this.lock = lock;
         this.request = request;
     }
 
-    public final synchronized int release() {
+    public final synchronized boolean release() {
         return lock.releaseLock(request);
     }
 }

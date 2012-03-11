@@ -49,9 +49,22 @@ public class ServerHandler extends SimpleChannelUpstreamHandler {
         this.releaseAllLocks();
     }
 
+    void writeResponse(Channel channel, String msg) {
+        this.writeResponse(channel, msg, null);
+    }
+
+    void writeResponse(Channel channel, String msg, String lockKey) {
+        String response = msg;
+        if (lockKey != null) {
+            Lock lock = syncCore.getSyncLock(lockKey);
+            response += " " + lock.getCurrentGrantedCount() + " " + lock.getCurrentRequestCount() + " " + lockKey;
+        }
+        channel.write(response+"\n");
+    }
+
     /**
-     * Releases all locks granted of the current ServerHandle.
-     * Used when a client disconnects
+     * Releases all locks granted of the current ServerHandle. Used when a
+     * client disconnects
      */
     private void releaseAllLocks() {
         //Release all lock requests
@@ -63,16 +76,18 @@ public class ServerHandler extends SimpleChannelUpstreamHandler {
 
     /**
      * Returns a LockRequest for a particular channel/lock key
+     *
      * @param channel Channel used to respond.
      * @param lockKey The lock key
-     * @return If the LockRequest exists, it returns it, if not it creates a new one
+     * @return If the LockRequest exists, it returns it, if not it creates a new
+     * one
      */
     private ServerLockRequest getLockRequest(Channel channel, String lockKey) {
         Integer id;
         ServerLockRequest res = lockRequests.get(lockKey);
 
         if (res == null) {
-            res = new ServerLockRequest(channel);
+            res = new ServerLockRequest(channel,this);
             lockRequests.put(lockKey, res);
         }
         return res;
@@ -89,11 +104,12 @@ public class ServerHandler extends SimpleChannelUpstreamHandler {
 
     private void release(Channel channel, String lockKey) {
         ServerLockRequest request = getLockRequest(channel, lockKey);
-        int releasedCount = -1;
-        if (request != null && (releasedCount = request.release()) > 0) {
-            channel.write("RELEASED " + releasedCount + " " + lockKey + "\n");
+        if (request != null && request.release()) {
+            lockRequests.remove(lockKey);
+            this.writeResponse(channel,"RELEASED", lockKey);
+
         } else {
-            channel.write("NOT_RELEASED " + lockKey + "\n");
+            this.writeResponse(channel,"NOT_RELEASED", lockKey);
         }
     }
 

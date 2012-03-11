@@ -16,6 +16,20 @@ public class Lock {
         return lockKey;
     }
 
+    /**
+     * @return How many request are currently using the lock
+     */
+    public int getCurrentGrantedCount(){
+        return locksGranted.size();
+    }
+    
+    /**
+     * @return How many requests are currently waiting to get the lock
+     */
+    public int getCurrentRequestCount(){
+        return lockRequests.size();
+    }
+    
     Lock(String lockKey) {
         this.lockKey = lockKey;
         this.lockRequests = new LockRequestList();
@@ -80,7 +94,7 @@ public class Lock {
         LockHandle handle = new LockHandle(this, request);
 
         //Callback
-        request.lockGranted(handle, this.locksGranted.size());
+        request.lockGranted(handle);
     }
 
     /**
@@ -89,18 +103,17 @@ public class Lock {
      * case we do it triggers the recalculation
      *
      * @param request
-     * @return Returns the number of concurrent request that where using the
-     * lock before it was released by this call
+     * @return True if the request was using the lock, otherwise false.
      */
-    int releaseLock(LockRequest request) {
-        int executing = this.locksGranted.size();
+    boolean releaseLock(LockRequest request) {
         if (this.locksGranted.remove(request)) {
             if (request.getMaxConcurrent() == this.lockedMaxConcurrent) {
                 this.buildLockedMaxConcurrent();
             }
             this.processRequestList();
-        }
-        return executing;
+            return true;
+        }else
+            return false;
     }
 
     /**

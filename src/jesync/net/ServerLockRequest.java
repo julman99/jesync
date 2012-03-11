@@ -13,9 +13,12 @@ public class ServerLockRequest implements LockRequest {
     private Channel clientChannel;
     private LockHandle lockHandle;
     private int maxConcurrent=1;
+    private int timeout=-1;
+    private ServerHandler serverHandler;
 
-    public ServerLockRequest(Channel clientChannel) {
+    public ServerLockRequest(Channel clientChannel,ServerHandler serverHandler) {
         this.clientChannel = clientChannel;
+        this.serverHandler=serverHandler;
     }
 
     @Override
@@ -28,21 +31,30 @@ public class ServerLockRequest implements LockRequest {
     }
 
     @Override
-    public void lockGranted(LockHandle lock, int concurrent) {
-        this.lockHandle=lock;
-        this.clientChannel.write("GRANTED "+concurrent+" "+lock.getLockKey()+"\n");
+    public void lockGranted(LockHandle lockHandle) {
+        this.lockHandle=lockHandle;
+        this.serverHandler.writeResponse(this.clientChannel, "GRANTED", lockHandle.getLockKey());
     }
 
     @Override
     public void lockTimeout(String lock, int seconds) {
-        this.clientChannel.write("TIMEOUT "+seconds+" "+lock+"\n");
+        this.serverHandler.writeResponse(this.clientChannel, "TIMEOUT", lock);
+    }
+
+    @Override
+    public int getTimeout() {
+        return this.timeout;
+    }
+
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
     }
     
-    public int release(){
+    public boolean release(){
         if(this.lockHandle!=null){
             return this.lockHandle.release();
         }else
-            return 0;
+            return false;
     }
     
 }
