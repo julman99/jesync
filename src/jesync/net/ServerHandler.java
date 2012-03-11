@@ -11,7 +11,7 @@ import org.jboss.netty.channel.*;
  *
  * @author Julio Viera
  */
-public class ServerHandler extends SimpleChannelUpstreamHandler {
+public final class ServerHandler extends SimpleChannelUpstreamHandler {
 
     ServerLockRequestTable lockRequests;
     LockEngine syncCore;
@@ -22,7 +22,7 @@ public class ServerHandler extends SimpleChannelUpstreamHandler {
     }
 
     @Override
-    public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
+    public final void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
         String msg = (String) e.getMessage();
         String[] args = msg.split(" ");
         String command = args[0];
@@ -30,10 +30,14 @@ public class ServerHandler extends SimpleChannelUpstreamHandler {
         if (command.compareTo("lock") == 0) {
             String lockKey = args[1];
             int maxConcurrent = 1;
+            int timeout = -1;
             if (args.length > 2) {
                 maxConcurrent = Integer.parseInt(args[2]);
             }
-            this.lock(e.getChannel(), lockKey, maxConcurrent);
+            if (args.length > 3) {
+                timeout = Integer.parseInt(args[3]);
+            }
+            this.lock(e.getChannel(), lockKey, maxConcurrent,timeout);
         } else if (command.compareTo("release") == 0) {
             this.release(e.getChannel(), args[1]);
         } else if (command.compareTo("quit") == 0) {
@@ -44,16 +48,16 @@ public class ServerHandler extends SimpleChannelUpstreamHandler {
     }
 
     @Override
-    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+    public final void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         super.channelDisconnected(ctx, e);
         this.releaseAllLocks();
     }
 
-    void writeResponse(Channel channel, String msg) {
+    final void writeResponse(Channel channel, String msg) {
         this.writeResponse(channel, msg, null);
     }
 
-    void writeResponse(Channel channel, String msg, String lockKey) {
+    final void writeResponse(Channel channel, String msg, String lockKey) {
         String response = msg;
         if (lockKey != null) {
             Lock lock = syncCore.getSyncLock(lockKey);
@@ -68,9 +72,19 @@ public class ServerHandler extends SimpleChannelUpstreamHandler {
      */
     private void releaseAllLocks() {
         //Release all lock requests
-        for (Iterator it = this.lockRequests.values().iterator(); it.hasNext();) {
-            ServerLockRequest request = (ServerLockRequest) it.next();
-            request.release();
+        for (Iterator it = this.lockRequests.keySet().iterator(); it.hasNext();) {
+            String lockKey=(String) it.next();
+            
+            ServerLockRequest request = this.lockRequests.get(lockKey);
+            
+            Lock lock=this.syncCore.getSyncLock(lockKey);
+            synchronized(lock){
+                //Cancel the request in case it has not been granted yet
+                lock.cancelRequest(request);
+                
+                //Release the lock in case it has been granted
+                request.release();
+            }
         }
     }
 
@@ -94,9 +108,10 @@ public class ServerHandler extends SimpleChannelUpstreamHandler {
     }
 
     //*************** SERVER COMMANDS ******************//
-    private void lock(Channel channel, String lockKey, int maxConcurrent) {
+    private void lock(Channel channel, String lockKey, int maxConcurrent,int timeout) {
         ServerLockRequest request = getLockRequest(channel, lockKey);
         request.setMaxConcurrent(maxConcurrent);
+        request.setTimeout(timeout);
 
         Lock l = syncCore.getSyncLock(lockKey);
         l.requestLock(request);

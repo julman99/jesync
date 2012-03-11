@@ -11,11 +11,11 @@ public final class LockHandle {
     Lock lock;
     LockRequest request;
 
-    public String getLockKey() {
+    public final String getLockKey() {
         return lock.getLockKey();
     }
 
-    public Lock getLock() {
+    public final Lock getLock() {
         return lock;
     }
 

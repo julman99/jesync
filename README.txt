@@ -35,8 +35,8 @@ Mid April 2012:     - Release version 1.0
 
 3. Backlog
 ----------------------------
-- Add timeout support
 - Implement PHP driver
+- Add command line options parser and feedback
 - Add Unit Testing suite
 - Improve protocol parsing engine, detect errors and provide feedback
 - Develop the Java JESync Client driver

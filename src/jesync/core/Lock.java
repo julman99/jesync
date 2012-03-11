@@ -1,5 +1,7 @@
 package jesync.core;
 
+
+
 /**
  * Defines a lock and all the logic associated with granting and releasing them
  *
@@ -11,7 +13,7 @@ public class Lock {
     private LockRequestList lockRequests = new LockRequestList();
     private LockRequestList locksGranted = new LockRequestList();
     private int lockedMaxConcurrent = Integer.MAX_VALUE;
-
+    
     public String getLockKey() {
         return lockKey;
     }
@@ -44,10 +46,16 @@ public class Lock {
         if (this.locksGranted.contains(request)) {
             //this lock is already granted for this request, lets re-grant it
             this.grantLock(request);
-        } else {
+        } else if(!this.lockRequests.contains(request)) {
             this.lockRequests.add(request);
+            LockRequestTimeout.scheduleTimeout(this,request);
             this.processRequestList();
         }
+    }
+    
+    
+    public final synchronized boolean cancelRequest(LockRequest request){
+        return this.lockRequests.remove(request);
     }
 
     /**
@@ -105,7 +113,7 @@ public class Lock {
      * @param request
      * @return True if the request was using the lock, otherwise false.
      */
-    boolean releaseLock(LockRequest request) {
+    final boolean releaseLock(LockRequest request) {
         if (this.locksGranted.remove(request)) {
             if (request.getMaxConcurrent() == this.lockedMaxConcurrent) {
                 this.buildLockedMaxConcurrent();

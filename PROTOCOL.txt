@@ -9,14 +9,14 @@ beanstalkd
 1. Requesting a lock
 --------------------
 
-lock <lock_key> <max_concurrent> <timeout>
+lock <lock_key>[[ <max_concurrent>[ <timeout>]]
 
 lock_key:       Any string (no spaces) representing the lock key
 
 max_concurrent: Max number of concurrent request allowed to run simultaneously
                 with the one being requested
 
-timeout:        (NOT SUPPORTED YET) Specifies the maximum time to wait for the
+timeout:        Specifies the maximum time to wait in seconds for the
                 lock to be granted
 
 
