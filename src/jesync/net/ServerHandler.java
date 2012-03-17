@@ -37,11 +37,13 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
             if (args.length > 3) {
                 timeout = Integer.parseInt(args[3]);
             }
-            this.lock(e.getChannel(), lockKey, maxConcurrent,timeout);
+            this.lock(e.getChannel(), lockKey, maxConcurrent, timeout);
         } else if (command.compareTo("release") == 0) {
             this.release(e.getChannel(), args[1]);
         } else if (command.compareTo("quit") == 0) {
             this.quit(e.getChannel());
+        } else if (command.compareTo("status") == 0) {
+            this.status(e.getChannel(), args[1]);
         } else {
             e.getChannel().write("INVALID_COMMAND\n");
         }
@@ -63,7 +65,7 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
             Lock lock = syncCore.getSyncLock(lockKey);
             response += " " + lock.getCurrentGrantedCount() + " " + lock.getCurrentRequestCount() + " " + lockKey;
         }
-        channel.write(response+"\n");
+        channel.write(response + "\n");
     }
 
     /**
@@ -73,15 +75,15 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
     private void releaseAllLocks() {
         //Release all lock requests
         for (Iterator it = this.lockRequests.keySet().iterator(); it.hasNext();) {
-            String lockKey=(String) it.next();
-            
+            String lockKey = (String) it.next();
+
             ServerLockRequest request = this.lockRequests.get(lockKey);
-            
-            Lock lock=this.syncCore.getSyncLock(lockKey);
-            synchronized(lock){
+
+            Lock lock = this.syncCore.getSyncLock(lockKey);
+            synchronized (lock) {
                 //Cancel the request in case it has not been granted yet
                 lock.cancelRequest(request);
-                
+
                 //Release the lock in case it has been granted
                 request.release();
             }
@@ -101,14 +103,14 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
         ServerLockRequest res = lockRequests.get(lockKey);
 
         if (res == null) {
-            res = new ServerLockRequest(channel,this);
+            res = new ServerLockRequest(channel, this);
             lockRequests.put(lockKey, res);
         }
         return res;
     }
 
     //*************** SERVER COMMANDS ******************//
-    private void lock(Channel channel, String lockKey, int maxConcurrent,int timeout) {
+    private void lock(Channel channel, String lockKey, int maxConcurrent, int timeout) {
         ServerLockRequest request = getLockRequest(channel, lockKey);
         request.setMaxConcurrent(maxConcurrent);
         request.setTimeout(timeout);
@@ -121,11 +123,15 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
         ServerLockRequest request = getLockRequest(channel, lockKey);
         if (request != null && request.release()) {
             lockRequests.remove(lockKey);
-            this.writeResponse(channel,"RELEASED", lockKey);
+            this.writeResponse(channel, "RELEASED", lockKey);
 
         } else {
-            this.writeResponse(channel,"NOT_RELEASED", lockKey);
+            this.writeResponse(channel, "NOT_RELEASED", lockKey);
         }
+    }
+
+    private void status(Channel channel, String lockKey) {
+        this.writeResponse(channel, "STATUS", lockKey);
     }
 
     private void quit(Channel channel) {

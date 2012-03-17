@@ -54,3 +54,7 @@ Waiting:        Number of request waiting to access the lock
 
 lockkey:        The lock key
 
+Also it is possible to ask for the status of a key anytime doing:
+
+status <lock_key>
+
