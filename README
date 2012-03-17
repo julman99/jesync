@@ -5,16 +5,16 @@ Author: Julio Viera
 1. Introduction
 ----------------------------
 JESync is a fast portable mutex/semaphore server developed in Java. It provides
-an easy way to syncronize task among multiple processes that can be running 
+an easy way to synchronize tasks among multiple processes that can be running 
 in different machines and need to access o perform critical tasks.
 
 The principle behind JESync is to request a lock for a particular String. If
 no other connection is using the lock, the lock will be granted to the one
-requesting it. Otherwize, the connection is inserted in a FIFO queue and the
+requesting it. Otherwise, the connection is inserted in a FIFO queue and the
 lock will be granted when available.
 
 JESync also supports multiple grants per lock. For example, if you need to run
-an algorithm, and you dont want to have more than 50 processes running it at 
+an algorithm, and you don't want to have more than (e.g.) 50 processes running it at 
 the same time, you can request the locks with 50 on the max_concurrent 
 parameter. The server will only grant the lock to 50 connections at the same
 time
