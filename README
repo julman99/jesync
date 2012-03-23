@@ -35,7 +35,6 @@ Mid April 2012:     - Release version 1.0
 
 3. Backlog
 ----------------------------
-- Implement PHP driver
 - Add command line options parser and feedback
 - Add Unit Testing suite
 - Improve protocol parsing engine, detect errors and provide feedback
@@ -48,4 +47,9 @@ Mid April 2012:     - Release version 1.0
 
 
 4. Dependencies
+----------------------------
 - http://netty.io/
+
+5. Drivers
+----------------------------
+- PHP: https://github.com/julman99/JESync-php
