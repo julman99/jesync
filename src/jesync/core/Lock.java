@@ -48,8 +48,8 @@ public class Lock {
             this.grantLock(request);
         } else if(!this.lockRequests.contains(request)) {
             this.lockRequests.add(request);
-            LockRequestTimeout.scheduleTimeout(this,request);
             this.processRequestList();
+            LockRequestTimeout.scheduleTimeout(this,request);
         }
     }
     

@@ -29,6 +29,8 @@ public class LockRequestTimeout extends TimerTask {
             if(timer==null)
                 timer=new Timer();
             timer.schedule(new LockRequestTimeout(lock,request), timeout*1000);
+        }else if(timeout==0){
+            new LockRequestTimeout(lock,request).run();
         }
     }
 
