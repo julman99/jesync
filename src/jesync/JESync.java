@@ -1,6 +1,11 @@
 package jesync;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import jesync.net.Server;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 
 /**
  *
@@ -8,15 +13,32 @@ import jesync.net.Server;
  */
 public class JESync {
 
+    
+    static Collection<String> a(String... strs) {
+        return Arrays.asList(strs);
+    }
+    
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        int port=11400;
+    public static void main(String[] args) throws Exception {
+        OptionParser parser=new OptionParser();
+        parser.acceptsAll(a("p","port"),"Port to listen on").withRequiredArg().ofType(Integer.class).describedAs("Port").defaultsTo(11400);
+        parser.acceptsAll(a("h","?","help"),"Show help");
+        parser.acceptsAll(a("v","version"),"Prints version number");
+                 
+        OptionSet options=parser.parse(args);
         
-        if(args.length>0)
-            port=Integer.parseInt(args[0]);
-        
-        new Server(port).run();
+        if(options.has("h")){
+            parser.printHelpOn(System.out);
+        }else if(options.has("v")){
+            System.out.println("JESync 0.3-alpha");
+            System.out.println("https://github.com/julman99/JESync");
+            System.out.println("Copyright (c) 2012 Julio Viera");
+        }else{
+            int port=Integer.parseInt(options.valueOf("p").toString());
+            System.out.println("JESync Server, port: "+port);
+            new Server(port).run();
+        }
     }
 }
