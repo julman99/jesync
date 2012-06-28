@@ -32,7 +32,7 @@ public class JESync {
         if(options.has("h")){
             parser.printHelpOn(System.out);
         }else if(options.has("v")){
-            System.out.println("JESync 0.3-alpha");
+            System.out.println("JESync 0.4 BETA");
             System.out.println("https://github.com/julman99/JESync");
             System.out.println("Copyright (c) 2012 Julio Viera");
         }else{

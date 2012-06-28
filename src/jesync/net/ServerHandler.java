@@ -3,6 +3,7 @@ package jesync.net;
 import java.util.Iterator;
 import jesync.core.Lock;
 import jesync.core.LockEngine;
+import jesync.core.LockHandle;
 import org.jboss.netty.channel.*;
 
 /**
@@ -31,13 +32,17 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
             String lockKey = args[1];
             int maxConcurrent = 1;
             int timeout = -1;
+            int expireInSeconds=120;
             if (args.length > 2) {
                 maxConcurrent = Integer.parseInt(args[2]);
             }
             if (args.length > 3) {
                 timeout = Integer.parseInt(args[3]);
             }
-            this.lock(e.getChannel(), lockKey, maxConcurrent, timeout);
+            if (args.length > 4) {
+                expireInSeconds = Integer.parseInt(args[4]);
+            }
+            this.lock(e.getChannel(), lockKey, maxConcurrent, timeout, expireInSeconds);
         } else if (command.compareTo("release") == 0) {
             this.release(e.getChannel(), args[1]);
         } else if (command.compareTo("quit") == 0) {
@@ -56,16 +61,26 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
     }
 
     final void writeResponse(Channel channel, String msg) {
-        this.writeResponse(channel, msg, null);
+        this.writeResponse(channel, msg, null,null);
     }
 
-    final void writeResponse(Channel channel, String msg, String lockKey) {
-        String response = msg;
+    final void writeResponse(Channel channel, String msg, String lockKey, LockHandle lockHandle) {
+        StringBuilder response=new StringBuilder(msg);
         if (lockKey != null) {
             Lock lock = syncCore.getSyncLock(lockKey);
-            response += " " + lock.getCurrentGrantedCount() + " " + lock.getCurrentRequestCount() + " " + lockKey;
+            response.append(" ");
+            response.append(lock.getCurrentGrantedCount());
+            response.append(" ");
+            response.append(lock.getCurrentRequestCount());
+            response.append(" ");
+            response.append(lockKey);
+            if(lockHandle!=null){
+                response.append(" ");
+                response.append(lockHandle.getSecondsRemaining());
+            }
         }
-        channel.write(response + "\n");
+        response.append("\n");
+        channel.write(response.toString());
     }
 
     /**
@@ -85,7 +100,9 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
                 lock.cancelRequest(request);
 
                 //Release the lock in case it has been granted
-                request.release();
+                LockHandle handle=request.getLockHandle();
+                if(handle!=null)
+                    handle.release();
             }
         }
     }
@@ -110,10 +127,11 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
     }
 
     //*************** SERVER COMMANDS ******************//
-    private void lock(Channel channel, String lockKey, int maxConcurrent, int timeout) {
+    private void lock(Channel channel, String lockKey, int maxConcurrent, int timeout, int expireTimeout) {
         ServerLockRequest request = getLockRequest(channel, lockKey);
         request.setMaxConcurrent(maxConcurrent);
         request.setTimeout(timeout);
+        request.setExpireTimeout(expireTimeout);
 
         Lock l = syncCore.getSyncLock(lockKey);
         l.requestLock(request);
@@ -121,17 +139,18 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
 
     private void release(Channel channel, String lockKey) {
         ServerLockRequest request = getLockRequest(channel, lockKey);
-        if (request != null && request.release()) {
+        LockHandle handle;
+        if (request != null && (handle=request.getLockHandle())!=null && handle.release()) {
             lockRequests.remove(lockKey);
-            this.writeResponse(channel, "RELEASED", lockKey);
+            this.writeResponse(channel, "RELEASED",lockKey , handle);
 
         } else {
-            this.writeResponse(channel, "NOT_RELEASED", lockKey);
+            this.writeResponse(channel, "NOT_RELEASED", lockKey, null);
         }
     }
 
     private void status(Channel channel, String lockKey) {
-        this.writeResponse(channel, "STATUS", lockKey);
+        this.writeResponse(channel, "STATUS", lockKey, null);
     }
 
     private void quit(Channel channel) {

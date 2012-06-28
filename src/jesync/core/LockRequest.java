@@ -24,6 +24,20 @@ public interface LockRequest {
     void lockTimeout(String lock,int seconds);
     
     /**
+     * Called by the Lock class when a granted lock is released for this request
+     * @param lock
+     * @param seconds 
+     */
+    void lockReleased(String lock);
+    
+    /**
+     * Called by the Lock class when a granted lock expires for this request
+     * @param lock
+     * @param seconds 
+     */
+    void lockExpired(String lock);
+    
+    /**
      * Called by the Lock class to determine if a lock can be granted to this or another request.
      * This value is used for two conditions:
      * 1. If the current request does not have the lock, then this value is compared
@@ -44,4 +58,10 @@ public interface LockRequest {
      * Note: -1 means unlimited
      */
     int getTimeout();
+    
+    /**
+     * Called by the Lock class to know how many seconds the lock should be granted
+     * to this particular request
+     */
+    int getExpireTimeout();
 }

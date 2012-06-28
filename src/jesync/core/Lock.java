@@ -1,7 +1,5 @@
 package jesync.core;
 
-
-
 /**
  * Defines a lock and all the logic associated with granting and releasing them
  *
@@ -11,7 +9,7 @@ public class Lock {
 
     private String lockKey;
     private LockRequestList lockRequests = new LockRequestList();
-    private LockRequestList locksGranted = new LockRequestList();
+    private LockRequestMap locksGranted = new LockRequestMap();
     private int lockedMaxConcurrent = Integer.MAX_VALUE;
     
     public String getLockKey() {
@@ -43,7 +41,7 @@ public class Lock {
      * @param request
      */
     public final synchronized void requestLock(LockRequest request) {
-        if (this.locksGranted.contains(request)) {
+        if (this.locksGranted.containsKey(request)) {
             //this lock is already granted for this request, lets re-grant it
             this.grantLock(request);
         } else if(!this.lockRequests.contains(request)) {
@@ -87,20 +85,26 @@ public class Lock {
      * @param request
      */
     private void grantLock(LockRequest request) {
-        if (!this.locksGranted.contains(request)) { //We have never granted this lock to this request.
-            this.locksGranted.add(request);
-
+        LockHandle handle = this.locksGranted.get(request);
+        if (handle == null) { //We have never granted this lock to this request.
             //Recalculate the lockedMaxConcurrent to respect the maxConcurrent
             //values for the already locked requests
             if (this.lockedMaxConcurrent > request.getMaxConcurrent()) {
                 this.lockedMaxConcurrent = request.getMaxConcurrent();
             }
+            
+            this.lockRequests.remove(request);
+
+            //Create the handle that will be used by the request to release the lock
+            handle = new LockHandle(this, request);
+            this.locksGranted.put(request,handle);
+            
+        }else{
+            handle.setExpiresIn(request.getExpireTimeout());
         }
-        this.lockRequests.remove(request);
-
-        //Create the handle that will be used by the request to release the lock
-        LockHandle handle = new LockHandle(this, request);
-
+        //Schedule the expiration timeout
+        LockHandleTimeout.scheduleTimeout(handle);
+        
         //Callback
         request.lockGranted(handle);
     }
@@ -114,7 +118,8 @@ public class Lock {
      * @return True if the request was using the lock, otherwise false.
      */
     final boolean releaseLock(LockRequest request) {
-        if (this.locksGranted.remove(request)) {
+        if (this.locksGranted.containsKey(request)) {
+            this.locksGranted.remove(request);
             if (request.getMaxConcurrent() == this.lockedMaxConcurrent) {
                 this.buildLockedMaxConcurrent();
             }
@@ -123,6 +128,14 @@ public class Lock {
         }else
             return false;
     }
+    
+    final boolean expireLock(LockRequest request){
+        boolean res = this.releaseLock(request);
+        if(res){
+            request.lockExpired(this.lockKey);
+        }
+        return res;
+    }
 
     /**
      * Builds the lockedMaxConcurrent value. Loops through the locksGranted list
@@ -130,8 +143,8 @@ public class Lock {
      */
     private void buildLockedMaxConcurrent() {
         this.lockedMaxConcurrent = Integer.MAX_VALUE;
-        for (int i = 0; i < this.locksGranted.size(); i++) {
-            LockRequest req = this.locksGranted.get(i);
+        
+        for (LockRequest req : locksGranted.keySet()) {
             if (req.getMaxConcurrent() < this.lockedMaxConcurrent) {
                 this.lockedMaxConcurrent = req.getMaxConcurrent();
             }

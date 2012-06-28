@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package jesync.core;
 
 import java.util.Timer;
@@ -23,7 +19,7 @@ public class LockRequestTimeout extends TimerTask {
         this.request=request;
     }
     
-    public final static void scheduleTimeout(Lock lock,final LockRequest request){
+    public static void scheduleTimeout(Lock lock,final LockRequest request){
         int timeout=request.getTimeout();
         if(timeout>0){
             if(timer==null)

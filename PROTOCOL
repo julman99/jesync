@@ -21,7 +21,10 @@ timeout:        Specifies the maximum time to wait in seconds for the
 
 
 Response: 
-GRANTED <lockKey_status>
+GRANTED <lockKey_status> <seconds_left>
+
+seconds_left:   Number of seconds left before the lock expires, to renew the
+                grant, you need to issue another lock command
 
 --------------------
 2.Releasing a lock
@@ -35,10 +38,12 @@ lock_key:       Any string (no spaces) representing the locked key to be
 
 Response:
 If the lock was locked by the current connection
-RELEASED <lockKey_status>
+RELEASED <lockKey_status> <seconds_left>
+
+seconds_left:   Number of seconds left before the lock expired
 
 If the lock was not locked by the current connection
-NOT_RELEASED <lockKey_status>
+NOT_RELEASED <lockKey_status> 
 
 --------------------
 3. Lock key status

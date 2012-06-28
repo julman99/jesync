@@ -1,4 +1,4 @@
-#JESync BETA 0.3
+#JESync 0.4 BETA
 
 ##1. Introduction
 JESync is a fast portable mutex/semaphore server developed in Java. It provides an easy way to synchronize tasks among multiple processes that can be running  in different machines and need to access o perform critical tasks.
