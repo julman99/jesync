@@ -106,7 +106,8 @@ public class Lock {
         LockHandleTimeout.scheduleTimeout(handle);
         
         //Callback
-        request.lockGranted(handle);
+        if(this.locksGranted.get(request)!=null) //only call the callback if the request stills granted
+            request.lockGranted(handle);
     }
 
     /**
