@@ -18,12 +18,13 @@ The current release roadmap is the following:
 
 
 ##3. Backlog
-- Add Unit Testing suite
+- Continue developing the JUnit tests
 - Improve protocol parsing engine, detect errors and provide feedback
 - Develop the Java JESync Client driver
 - Test on several Linux, Mac and Windows distributions
 - Test and profile on high concurrency environments.
 - Develop drivers for other languages than PHP and Java
+- Maybe convert it to a maven project?
 
 1.0 Release date is expected to be somewhere in mid-july or august 2012.
 
