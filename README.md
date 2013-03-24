@@ -1,4 +1,4 @@
-#JESync 0.5 BETA
+#JESync 0.6 BETA
 
 ##1. Introduction
 JESync is a fast portable mutex/semaphore server developed in Java. It provides an easy way to synchronize tasks among multiple processes that can be running  in different machines and need to access o perform critical tasks.
@@ -21,16 +21,9 @@ The current release roadmap is the following:
 - Continue developing the JUnit tests
 - Improve protocol parsing engine, detect errors and provide feedback
 - Develop the Java JESync Client driver
-- Test on several Linux, Mac and Windows distributions
+- Test on Windows servers
 - Test and profile on high concurrency environments.
 - Develop drivers for other languages than PHP and Java
-- Maybe convert it to a maven project?
 
-1.0 Release date is expected to be somewhere in mid-july or august 2012.
-
-
-##4. Dependencies
-- [Netty](http://netty.io/) (included in lib/ directory)
-
-##5. Drivers
+##4. Drivers
 - [PHP](https://github.com/julman99/JESync-php)
