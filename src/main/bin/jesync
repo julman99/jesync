@@ -1,0 +1,28 @@
+#!/bin/sh
+
+#first get the instalation directory
+#reference: http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in/246128#246128
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+
+#check for java
+JAVA_VERSION=`java -version 2>&1 |awk 'NR==1{ gsub(/"/,""); print $3 }'`
+SUPPORTED_JAVA=0
+if [[ $JAVA_VERSION =~ 1.[6,7].* ]]; then
+ SUPPORTED_JAVA=1
+fi
+
+if [ "$SUPPORTED_JAVA" -ne "1" ]; then
+  echo "You need at least Java 1.6 to run JESync"
+  exit 1
+fi
+
+
+#now we have the installation directory and java validated, execute the program
+java -cp "$DIR/../lib/*" com.github.julman99.jesync.JESync $@

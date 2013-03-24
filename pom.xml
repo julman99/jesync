@@ -1,42 +1,42 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.github.julman99.jesync</groupId>
-  <artifactId>JESync</artifactId>
-  <version>0.6</version>
-  <packaging>jar</packaging>
+    <groupId>com.github.julman99.jesync</groupId>
+    <artifactId>JESync</artifactId>
+    <version>0.6</version>
+    <packaging>jar</packaging>
 
-  <name>JESync</name>
-  <url>http://maven.apache.org</url>
+    <name>JESync</name>
+    <url>http://maven.apache.org</url>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.10</version>
-      <scope>test</scope>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty</artifactId>
-      <version>3.6.1.Final</version>
-    </dependency>
-    <dependency>
-      <groupId>net.sf.jopt-simple</groupId>
-      <artifactId>jopt-simple</artifactId>
-      <version>4.4</version>
-    </dependency>
-  </dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+            <version>3.6.1.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jopt-simple</groupId>
+            <artifactId>jopt-simple</artifactId>
+            <version>4.4</version>
+        </dependency>
+    </dependencies>
   
-  <build>
-      <plugins>
-          <plugin>
+    <build>
+        <plugins>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3.1</version>
@@ -49,36 +49,14 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.0</version>
-                
-                <executions>
-                    <execution>
-                        <phase>none</phase>
-                        <goals><goal>shade</goal></goals>
-                    </execution>
-                </executions>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
                 <configuration>
-                    <finalName>${project.artifactId}-${project.version}</finalName>
-                    <transformers>
-                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>com.github.julman99.jesync.JESync</mainClass>
-                        </transformer>
-                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                            <resource>META-INF/services/javax.ws.rs.ext.Providers</resource>
-                        </transformer>
-                    </transformers>
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>META-INF/*.SF</exclude>
-                                <exclude>META-INF/*.DSA</exclude>
-                                <exclude>META-INF/*.RSA</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
+                    <descriptors>
+                        <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
+                       
+                        <descriptor>src/main/assembly/dist.xml</descriptor>
+                    </descriptors>
                 </configuration>
             </plugin>
             <plugin>
@@ -90,6 +68,22 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
-      </plugins>
-  </build>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/assembly</directory>
+                <excludes>
+                    <exclude>*</exclude>
+                </excludes>
+            </resource>
+        
+            
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>*</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
 </project>
