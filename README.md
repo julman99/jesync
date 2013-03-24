@@ -9,9 +9,11 @@ The principle behind JESync is to request a lock for a particular String. If no 
 JESync also supports multiple grants per lock. For example, if you need to run an algorithm, and you don't want to have more than (e.g.) 50 processes running it at the same time, you can request the locks with 50 on the max_concurrent parameter. The server will only grant the lock to 50 connections at the same time
 
 ##2. Current project status
-JESync currently is on BETA status. Since it is still a BETA, it should not be used on any production environment, however it is stable enough for you to use it for development.
+JESync currently is on Release Candidate status. It has been used inside [Pixable](http://www.pixable.com) for almost a year. After the upgrade to v0.5 it has been running without any issues for several months.
 
-The current release roadmap is the following:
+There are more unit tests and load test need to be done until I consider this to be a 1.0 version, however, it does not crash and there are no known bugs in functionallity.
+
+Feel free to use it and improve it!
 
 ##3. Backlog
 - Continue developing the JUnit tests
