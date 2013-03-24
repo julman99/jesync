@@ -1,6 +1,7 @@
-###JESync 0.6 BETA
+###JESync 0.6 RC
 
 - Converted to a maven project
+- Created shell script to launch the server without manually invoking java
 
 ###JESync 0.5 BETA
 
