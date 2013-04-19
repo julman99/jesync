@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #first get the instalation directory
 #reference: http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in/246128#246128
