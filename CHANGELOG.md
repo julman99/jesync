@@ -1,3 +1,7 @@
+###JESync 0.7 RC
+
+- bin/jesync was incorrectly defined as a sh script instead of a bash script
+
 ###JESync 0.6 RC
 
 - Converted to a maven project

@@ -4,7 +4,7 @@
 
     <groupId>com.github.julman99.jesync</groupId>
     <artifactId>JESync</artifactId>
-    <version>0.6</version>
+    <version>0.7</version>
     <packaging>jar</packaging>
 
     <name>JESync</name>
