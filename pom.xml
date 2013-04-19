@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.julman99.jesync</groupId>
-    <artifactId>JESync</artifactId>
+    <artifactId>jesync</artifactId>
     <version>0.7</version>
     <packaging>jar</packaging>
 
