@@ -1,11 +1,11 @@
 package com.github.julman99.jesync.core;
 
-import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * Alias for HashMap<String, Lock>
  * @author Julio Viera <julio.viera@gmail.com>
  */
-public class LocksMap extends HashMap<String, Lock> {
+public class LocksMap extends TreeMap<String, Lock> {
     
 }

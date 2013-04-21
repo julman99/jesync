@@ -1,5 +1,7 @@
 package com.github.julman99.jesync.core;
 
+import java.util.Iterator;
+
 /**
  * Engine that generates Lock objects for a desired key
  * @author Julio Viera <julio.viera@gmail.com>
@@ -21,5 +23,8 @@ public final class LockEngine {
         return res;
     }
      
+    public final synchronized Iterable<Lock> getByKey(){
+        return table.values();
+    }
     
 }

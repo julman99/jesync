@@ -1,3 +1,7 @@
+###JESync 0.8 RC
+
+- Adds status-by-key command
+
 ###JESync 0.7 RC
 
 - bin/jesync was incorrectly defined as a sh script instead of a bash script

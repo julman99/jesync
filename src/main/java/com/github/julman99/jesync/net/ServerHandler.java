@@ -52,6 +52,8 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
                 this.quit(e.getChannel());
             } else if (command.equals("status")) {
                 this.status(e.getChannel(), args[1]);
+            } else if (command.equals("status-by-key")){
+                this.statusByKey(e.getChannel());
             } else {
                 e.getChannel().write("INVALID_COMMAND\n");
             }
@@ -156,6 +158,12 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
 
     private void status(Channel channel, String lockKey) {
         this.writeResponse(channel, "STATUS", lockKey, null);
+    }
+    
+    private void statusByKey(Channel channel) {
+        for(Lock l: this.syncCore.getByKey()){
+            status(channel, l.getLockKey());
+        }
     }
 
     private void quit(Channel channel) {
