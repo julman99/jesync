@@ -5,9 +5,11 @@ package com.github.julman99.jesync.core;
  * @author Julio Viera <julio.viera@gmail.com>
  */
 public final class LockEngine {
-    LocksTable table;
+    
+    private LocksMap table;
+    
     public LockEngine(){
-        this.table=new LocksTable();
+        this.table=new LocksMap();
     }
     
     public final synchronized Lock getSyncLock(String key){

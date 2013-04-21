@@ -15,12 +15,12 @@ import org.jboss.netty.channel.*;
  */
 public final class ServerHandler extends SimpleChannelUpstreamHandler {
 
-    ServerLockRequestTable lockRequests;
-    LockEngine syncCore;
+    private ServerLockRequestMap lockRequests;
+    private LockEngine syncCore;
 
     public ServerHandler(LockEngine syncCore) {
         this.syncCore = syncCore;
-        this.lockRequests = new ServerLockRequestTable();
+        this.lockRequests = new ServerLockRequestMap();
     }
 
     @Override
