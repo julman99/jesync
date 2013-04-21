@@ -10,7 +10,7 @@ import java.security.InvalidParameterException;
 public class Lock {
     
     private final String lockKey;
-    private final LockRequestList lockRequests = new LockRequestList();
+    private final LockRequestSet lockRequests = new LockRequestSet();
     private final LockRequestMap locksGranted = new LockRequestMap();
     private final LockHandleTimeout lockExpireHandler;
     private final LockRequestTimeout lockRequestTimeout;
@@ -73,8 +73,7 @@ public class Lock {
         if (this.locksGranted.containsKey(request)) {
             //this lock is already granted for this request, lets re-grant it
             this.grantLock(request);
-        } else if(!this.lockRequests.contains(request)) {
-            this.lockRequests.add(request);
+        } else if(this.lockRequests.add(request)) {
             this.processRequestList();
             this.lockRequestTimeout.scheduleTimeout(request);
         }
@@ -93,17 +92,25 @@ public class Lock {
      * particular lock.
      */
     private void processRequestList() {
-        int newSize = locksGranted.size() + 1;
-
-        for (int i = 0; i < this.lockRequests.size(); i++) {
-            LockRequest req = this.lockRequests.get(i);
-            if (req.getMaxConcurrent() >= newSize && newSize <= this.lockedMaxConcurrent) {
-                this.grantLock(req);
-                newSize++;
-                i--;
-                continue;
+        LockRequest found;
+        do{
+            found = null;
+            int newSize = locksGranted.size() + 1;
+            
+            //Loop trough all the request and find one that matches the grant conditions
+            for (LockRequest req: this.lockRequests) {
+                if (req.getMaxConcurrent() >= newSize && newSize <= this.lockedMaxConcurrent) {
+                    found = req; 
+                    break;
+                }
             }
-        }
+            
+            //If we found a request grant the lock
+            if(found != null){
+                this.grantLock(found);
+            }
+            
+        }while(found != null); //repeat this loop until there are no more requests to grant
 
     }
 
