@@ -1,10 +1,10 @@
 package com.github.julman99.jesync.net;
 
 import java.security.InvalidParameterException;
-import java.util.Iterator;
 import com.github.julman99.jesync.core.Lock;
 import com.github.julman99.jesync.core.LockEngine;
 import com.github.julman99.jesync.core.LockHandle;
+import java.util.Map;
 import org.jboss.netty.channel.*;
 
 /**
@@ -31,7 +31,7 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
         String[] args = msg.split(" ");
         String command = args[0];
         try{
-            if (command.compareTo("lock") == 0) {
+            if (command.equals("lock")) {
                 String lockKey = args[1];
                 int maxConcurrent = 1;
                 int timeout = -1;
@@ -46,11 +46,11 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
                     expireInSeconds = Integer.parseInt(args[4]);
                 }
                 this.lock(e.getChannel(), lockKey, maxConcurrent, timeout, expireInSeconds);
-            } else if (command.compareTo("release") == 0) {
+            } else if (command.equals("release")) {
                 this.release(e.getChannel(), args[1]);
-            } else if (command.compareTo("quit") == 0) {
+            } else if (command.equals("quit")) {
                 this.quit(e.getChannel());
-            } else if (command.compareTo("status") == 0) {
+            } else if (command.equals("status")) {
                 this.status(e.getChannel(), args[1]);
             } else {
                 e.getChannel().write("INVALID_COMMAND\n");
@@ -95,20 +95,20 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
      */
     private void releaseAllLocks() {
         //Release all lock requests
-        for (Iterator it = this.lockRequests.keySet().iterator(); it.hasNext();) {
-            String lockKey = (String) it.next();
+        for (Map.Entry<String, ServerLockRequest> entry: this.lockRequests.entrySet()) {
 
-            ServerLockRequest request = this.lockRequests.get(lockKey);
+            String lockKey = entry.getKey();
+            ServerLockRequest request = entry.getValue();
 
             Lock lock = this.syncCore.getSyncLock(lockKey);
-            synchronized (lock) {
-                //Cancel the request in case it has not been granted yet
-                lock.cancelRequest(request);
+            
+            //Cancel the request in case it has not been granted yet
+            lock.cancelRequest(request);
 
-                //Release the lock in case it has been granted
-                LockHandle handle=request.getLockHandle();
-                if(handle!=null)
-                    handle.release();
+            //Release the lock in case it has been granted
+            LockHandle handle=request.getLockHandle();
+            if(handle!=null) {
+                handle.release();
             }
         }
     }

@@ -42,31 +42,28 @@ public class Lock {
      *
      * @param request
      */
-    public final void requestLock(LockRequest request) {
+    public final synchronized void requestLock(LockRequest request) {
         if(request.getMaxConcurrent()<=0)
             throw new InvalidParameterException("Max concurrent should be greater or equal than 1");
         if(request.getTimeout()<-1)
             throw new InvalidParameterException("Timeout should be greater or equal than -1");
         if(request.getExpireTimeout()<0)
             throw new InvalidParameterException("Expire timeout should be greater or equal than 0");
-        
-        synchronized(this){
-            if (this.locksGranted.containsKey(request)) {
-                //this lock is already granted for this request, lets re-grant it
-                this.grantLock(request);
-            } else if(!this.lockRequests.contains(request)) {
-                this.lockRequests.add(request);
-                this.processRequestList();
-                LockRequestTimeout.scheduleTimeout(this,request);
-            }
+                
+        if (this.locksGranted.containsKey(request)) {
+            //this lock is already granted for this request, lets re-grant it
+            this.grantLock(request);
+        } else if(!this.lockRequests.contains(request)) {
+            this.lockRequests.add(request);
+            this.processRequestList();
+            LockRequestTimeout.scheduleTimeout(this,request);
         }
+
     }
     
     
-    public final boolean cancelRequest(LockRequest request){
-        synchronized(this){
-            return this.lockRequests.remove(request);
-        }
+    public final synchronized boolean cancelRequest(LockRequest request) {
+        return this.lockRequests.remove(request);
     }
 
     /**
@@ -131,28 +128,25 @@ public class Lock {
      * @param request
      * @return True if the request was using the lock, otherwise false.
      */
-    final boolean releaseLock(LockRequest request) {
-        synchronized(this){
-            if (this.locksGranted.containsKey(request)) {
-                this.locksGranted.remove(request);
-                if (request.getMaxConcurrent() == this.lockedMaxConcurrent) {
-                    this.buildLockedMaxConcurrent();
-                }
-                this.processRequestList();
-                return true;
-            }else
-                return false;
+    final synchronized boolean releaseLock(LockRequest request) {
+        if (this.locksGranted.containsKey(request)) {
+            this.locksGranted.remove(request);
+            if (request.getMaxConcurrent() == this.lockedMaxConcurrent) {
+                this.buildLockedMaxConcurrent();
+            }
+            this.processRequestList();
+            return true;
+        } else {
+            return false;
         }
     }
-    
-    final boolean expireLock(LockRequest request){
-        synchronized(this){
-            boolean res = this.releaseLock(request);
-            if(res){
-                request.lockExpired(this.lockKey);
-            }
-            return res;
+
+    final synchronized boolean expireLock(LockRequest request) {
+        boolean res = this.releaseLock(request);
+        if (res) {
+            request.lockExpired(this.lockKey);
         }
+        return res;
     }
 
     /**
