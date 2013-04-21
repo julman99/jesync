@@ -1,9 +1,9 @@
 package com.github.julman99.jesync.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 
 /**
  * Engine that generates Lock objects for a desired key
@@ -11,27 +11,36 @@ import java.util.Iterator;
  */
 public final class LockEngine {
     
-    private LocksMap table;
+    private final LocksMap table;
     
     public LockEngine(){
         this.table=new LocksMap();
     }
     
-    public final synchronized Lock getSyncLock(String key){
-        Lock res=this.table.get(key);
-        if(res==null){
-            res=new Lock(key);
-            this.table.put(key,res);
+    public final Lock getSyncLock(String key){
+        synchronized(this.table){
+            Lock res=this.table.get(key);
+            if(res==null){
+                res=new Lock(key);
+                this.table.put(key,res);
+            }
+            return res;
         }
-        return res;
     }
      
-    public final synchronized Iterable<Lock> getByKey(){
-        return table.values();
+    public final Iterable<Lock> getByKey(){
+        Collection<Lock> res ;
+        synchronized(this.table){
+            res = new ArrayList(table.values());
+        }
+        return Collections.unmodifiableCollection(res);
     }
     
-    public final synchronized Iterable<Lock> getByRequests(){
-        ArrayList<Lock> res = new ArrayList<Lock>(table.values());
+    public final Iterable<Lock> getByRequests(){
+        ArrayList<Lock> res;
+        synchronized(table){
+            res = new ArrayList<Lock>(table.values());
+        }
         
         Collections.sort(res, new Comparator<Lock>() {
 
@@ -44,8 +53,11 @@ public final class LockEngine {
         return Collections.unmodifiableCollection(res);
     }
     
-    public final synchronized Iterable<Lock> getByGranted(){
-        ArrayList<Lock> res = new ArrayList<Lock>(table.values());
+    public final Iterable<Lock> getByGranted(){
+        ArrayList<Lock> res;
+        synchronized(table){
+            res = new ArrayList<Lock>(table.values());
+        }
         
         Collections.sort(res, new Comparator<Lock>() {
 
