@@ -122,7 +122,6 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
      * one
      */
     private ServerLockRequest getLockRequest(Channel channel, String lockKey) {
-        Integer id;
         ServerLockRequest res = lockRequests.get(lockKey);
 
         if (res == null) {
