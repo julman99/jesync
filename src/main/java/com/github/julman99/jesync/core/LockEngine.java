@@ -1,5 +1,8 @@
 package com.github.julman99.jesync.core;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 
 /**
@@ -25,6 +28,34 @@ public final class LockEngine {
      
     public final synchronized Iterable<Lock> getByKey(){
         return table.values();
+    }
+    
+    public final synchronized Iterable<Lock> getByRequests(){
+        ArrayList<Lock> res = new ArrayList<Lock>(table.values());
+        
+        Collections.sort(res, new Comparator<Lock>() {
+
+            @Override
+            public int compare(Lock t, Lock t1) {
+                return -(t.getCurrentRequestCount() - t1.getCurrentRequestCount());
+            }
+        });
+        
+        return Collections.unmodifiableCollection(res);
+    }
+    
+    public final synchronized Iterable<Lock> getByGranted(){
+        ArrayList<Lock> res = new ArrayList<Lock>(table.values());
+        
+        Collections.sort(res, new Comparator<Lock>() {
+
+            @Override
+            public int compare(Lock t, Lock t1) {
+                return -(t.getCurrentGrantedCount() - t1.getCurrentGrantedCount());
+            }
+        });
+        
+        return Collections.unmodifiableCollection(res);
     }
     
 }

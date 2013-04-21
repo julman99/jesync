@@ -63,3 +63,12 @@ Also it is possible to ask for the status of a key anytime doing:
 
 status <lock_key>
 
+--------------------
+4. Status listing
+--------------------
+A status listing can be requested to the server with the following commands
+
+status-by-key:      Returns the list of keys sorted by its name
+status-by-requests: Returns the list of keys sorted by the request queue
+status-by-grants:   Returns the list of keys sorted by the numbers of current grants to that particular key
+

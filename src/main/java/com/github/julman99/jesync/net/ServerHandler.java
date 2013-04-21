@@ -54,6 +54,10 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
                 this.status(e.getChannel(), args[1]);
             } else if (command.equals("status-by-key")){
                 this.statusByKey(e.getChannel());
+            } else if (command.equals("status-by-requests")){
+                this.statusByRequests(e.getChannel());
+            } else if (command.equals("status-by-grants")){
+                this.statusByGranted(e.getChannel());
             } else {
                 e.getChannel().write("INVALID_COMMAND\n");
             }
@@ -162,6 +166,18 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
     
     private void statusByKey(Channel channel) {
         for(Lock l: this.lockEngine.getByKey()){
+            status(channel, l.getLockKey());
+        }
+    }
+    
+    private void statusByRequests(Channel channel) {
+        for(Lock l: this.lockEngine.getByRequests()){
+            status(channel, l.getLockKey());
+        }
+    }
+    
+    private void statusByGranted(Channel channel) {
+        for(Lock l: this.lockEngine.getByGranted()){
             status(channel, l.getLockKey());
         }
     }
