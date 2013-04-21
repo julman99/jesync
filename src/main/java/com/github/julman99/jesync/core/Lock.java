@@ -8,10 +8,12 @@ import java.security.InvalidParameterException;
  * @author Julio Viera <julio.viera@gmail.com>
  */
 public class Lock {
-
-    private String lockKey;
-    private LockRequestList lockRequests = new LockRequestList();
-    private LockRequestMap locksGranted = new LockRequestMap();
+    
+    private final String lockKey;
+    private final LockRequestList lockRequests = new LockRequestList();
+    private final LockRequestMap locksGranted = new LockRequestMap();
+    private final LockHandleTimeout lockExpireHandler;
+    private final LockRequestTimeout lockRequestTimeout;
     private int lockedMaxConcurrent = Integer.MAX_VALUE;
     
     public String getLockKey() {
@@ -31,10 +33,28 @@ public class Lock {
     public int getCurrentRequestCount(){
         return lockRequests.size();
     }
-    
-    Lock(String lockKey) {
+
+    public Lock(final String lockKey) {
         this.lockKey = lockKey;
-        this.lockRequests = new LockRequestList();
+     
+        lockRequestTimeout = new LockRequestTimeout() {
+
+            @Override
+            protected void requestTimedOut(LockRequest request) {
+                if(cancelRequest(request)){
+                    request.lockTimeout(lockKey, request.getTimeout());
+                }
+            }
+        };
+        
+        //Creates the expire handler
+        lockExpireHandler = new LockHandleTimeout() {
+
+            @Override
+            protected void expire(LockHandle handle) {
+                expireLock(handle.getLockRequest());
+            }
+        };
     }
 
     /**
@@ -56,7 +76,7 @@ public class Lock {
         } else if(!this.lockRequests.contains(request)) {
             this.lockRequests.add(request);
             this.processRequestList();
-            LockRequestTimeout.scheduleTimeout(this,request);
+            this.lockRequestTimeout.scheduleTimeout(request);
         }
 
     }
@@ -106,14 +126,20 @@ public class Lock {
             this.lockRequests.remove(request);
 
             //Create the handle that will be used by the request to release the lock
-            handle = new LockHandle(this, request);
+            handle = new LockHandle(this, request){
+
+                @Override
+                public synchronized boolean release() {
+                    return releaseLock(this.getLockRequest());
+                }
+            };
             this.locksGranted.put(request,handle);
             
         }else{
             handle.setExpiresIn(request.getExpireTimeout());
         }
         //Schedule the expiration timeout
-        LockHandleTimeout.scheduleTimeout(handle);
+        this.lockExpireHandler.scheduleTimeout(handle);
         
         //Callback
         if(this.locksGranted.get(request)!=null) //only call the callback if the request stills granted
@@ -128,7 +154,7 @@ public class Lock {
      * @param request
      * @return True if the request was using the lock, otherwise false.
      */
-    final synchronized boolean releaseLock(LockRequest request) {
+    private synchronized boolean releaseLock(LockRequest request) {
         if (this.locksGranted.containsKey(request)) {
             this.locksGranted.remove(request);
             if (request.getMaxConcurrent() == this.lockedMaxConcurrent) {
@@ -141,7 +167,7 @@ public class Lock {
         }
     }
 
-    final synchronized boolean expireLock(LockRequest request) {
+    private synchronized boolean expireLock(LockRequest request) {
         boolean res = this.releaseLock(request);
         if (res) {
             request.lockExpired(this.lockKey);
@@ -163,4 +189,5 @@ public class Lock {
         }
 
     }
+
 }

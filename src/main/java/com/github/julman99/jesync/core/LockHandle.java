@@ -8,12 +8,16 @@ import java.util.Date;
  * This class is used for the requester to release the lock
  * @author Julio Viera <julio.viera@gmail.com>
  */
-public final class LockHandle {
+public abstract class LockHandle {
 
-    Lock lock;
-    LockRequest request;
-    int dateExpires;
+    private Lock lock;
+    private LockRequest request;
+    private int dateExpires;
 
+    protected final LockRequest getLockRequest(){
+        return this.request;
+    }
+    
     public final String getLockKey() {
         return lock.getLockKey();
     }
@@ -33,13 +37,7 @@ public final class LockHandle {
         this.setExpiresIn(request.getExpireTimeout());
     }
 
-    public final synchronized boolean release() {
-        return lock.releaseLock(request);
-    }
-    
-    final synchronized boolean expire() {
-        return lock.expireLock(request);
-    }
+    public abstract boolean release();
     
     final synchronized void setExpiresIn(int seconds){
         this.dateExpires=((int)new Date().getTime()/1000)+request.getExpireTimeout();

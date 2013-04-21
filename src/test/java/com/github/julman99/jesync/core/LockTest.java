@@ -1,11 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.github.julman99.jesync.core;
 
-import com.github.julman99.jesync.core.Lock;
-import com.github.julman99.jesync.core.LockEngine;
 import com.github.julman99.test.support.SynchronousLockRequest;
 import java.util.Random;
 import static org.junit.Assert.*;
@@ -152,6 +146,30 @@ public class LockTest {
         assertEquals(instance.getCurrentRequestCount(), 0);
         
     }
+    
+    /**
+     * Test the lock request timeout when trying to acquire a lock.
+     */
+    @Test
+    public void testRequestTimeout() throws InterruptedException {
+        int expiresIn = 1;
+        String lockKey="TEST-A";
+        Lock instance = this.lockEngine.getSyncLock(lockKey);
+        
+        //Test single lock
+        SynchronousLockRequest request = new SynchronousLockRequest(1, 1, 100);
+        instance.requestLock(request);
+        SynchronousLockRequest.LockState result = request.waitForRequest();
+        assertEquals(result, SynchronousLockRequest.LockState.LOCKED);
+        
+        //Now issue a lock that will timeout in 1 second
+        SynchronousLockRequest requestToCancel = new SynchronousLockRequest(1, expiresIn, 100);
+        instance.requestLock(requestToCancel);
+        assertEquals(instance.getCurrentRequestCount(), 1);
+        Thread.sleep(expiresIn*1000+100);
+        assertEquals(instance.getCurrentRequestCount(), 0);
+        
+    }
 
     /**
      * Test of releaseLock method, of class Lock.
@@ -167,7 +185,7 @@ public class LockTest {
         SynchronousLockRequest.LockState result = request.waitForRequest();
         assertEquals(result, SynchronousLockRequest.LockState.LOCKED);
         assertEquals(instance.getCurrentGrantedCount(), 1);
-        instance.releaseLock(request);
+        request.getLockHandle().release();
         assertEquals(instance.getCurrentGrantedCount(), 0);
         
     }
