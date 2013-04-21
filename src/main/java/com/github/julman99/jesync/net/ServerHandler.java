@@ -9,7 +9,9 @@ import org.jboss.netty.channel.*;
 
 /**
  * Class responsible for getting the messages from the client and invoking the
- * corresponding functionality of jesync.core package
+ * corresponding functionality of jesync.core package.
+ * There will be one ServerHandler instance per client. We can safely assume
+ * that no instance of this class will be shared by two different connections.
  *
  * @author Julio Viera
  */
