@@ -126,13 +126,7 @@ public class Lock {
             this.lockRequests.remove(request);
 
             //Create the handle that will be used by the request to release the lock
-            handle = new LockHandle(this, request){
-
-                @Override
-                public synchronized boolean release() {
-                    return releaseLock(this.getLockRequest());
-                }
-            };
+            handle = createLockHandle(request);
             this.locksGranted.put(request,handle);
             
         }else{
@@ -188,6 +182,15 @@ public class Lock {
             }
         }
 
+    }
+    
+    private LockHandle createLockHandle(LockRequest request) {
+        return new LockHandle(this, request) {
+            @Override
+            public synchronized boolean release() {
+                return releaseLock(this.getLockRequest());
+            }
+        };
     }
 
 }
