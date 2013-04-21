@@ -12,12 +12,11 @@ import org.jboss.netty.handler.codec.string.StringEncoder;
 /**
  * Creates a newly configured {@link ChannelPipeline} for a new channel.
  */
-public class ServerPipelineFactory implements
-        ChannelPipelineFactory {
-    LockEngine syncCore;
+public class ServerPipelineFactory implements ChannelPipelineFactory {
+    private LockEngine engine;
     
-    public ServerPipelineFactory(LockEngine syncCore){
-        this.syncCore=syncCore;
+    public ServerPipelineFactory(LockEngine engine){
+        this.engine=engine;
     }
 
     @Override
@@ -32,7 +31,7 @@ public class ServerPipelineFactory implements
         pipeline.addLast("encoder", new StringEncoder());
 
         // and then business logic.
-        pipeline.addLast("handler", new ServerHandler(this.syncCore));
+        pipeline.addLast("handler", new ServerHandler(this.engine));
 
         return pipeline;
     }
