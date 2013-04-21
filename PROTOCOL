@@ -1,4 +1,4 @@
-JESync Alpha 0.1 Protocol Specification
+JESync Protocol Specification
 Author: Julio Viera
 
 The protocol is a simple ASCII protocol inspired on projects like memcached or 
@@ -9,7 +9,7 @@ beanstalkd
 1. Requesting a lock
 --------------------
 
-lock <lock_key>[[ <max_concurrent>[ <timeout>]]
+lock <lock_key>[ <max_concurrent>[ <timeout>[ <expires>]]]
 
 lock_key:       Any string (no spaces) representing the lock key
 
@@ -18,6 +18,12 @@ max_concurrent: Max number of concurrent request allowed to run simultaneously
 
 timeout:        Specifies the maximum time to wait in seconds for the
                 lock to be granted
+
+expires:        The time on which the acquired lock (if acquired) will be 
+                automatically release by the server. If not specified it will
+                be 120 seconds. This parameter is a failsafe in case the socket
+                does not gets closed when the client disconnects without releasing
+                the lock. 
 
 
 Response: 
