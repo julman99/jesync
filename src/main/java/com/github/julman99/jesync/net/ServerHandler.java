@@ -18,10 +18,10 @@ import org.jboss.netty.channel.*;
 public final class ServerHandler extends SimpleChannelUpstreamHandler {
 
     private ServerLockRequestMap lockRequests;
-    private LockEngine syncCore;
+    private LockEngine lockEngine;
 
     public ServerHandler(LockEngine syncCore) {
-        this.syncCore = syncCore;
+        this.lockEngine = syncCore;
         this.lockRequests = new ServerLockRequestMap();
     }
 
@@ -75,7 +75,7 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
     final void writeResponse(Channel channel, String msg, String lockKey, LockHandle lockHandle) {
         StringBuilder response=new StringBuilder(msg);
         if (lockKey != null) {
-            Lock lock = syncCore.getSyncLock(lockKey);
+            Lock lock = lockEngine.getSyncLock(lockKey);
             response.append(" ");
             response.append(lock.getCurrentGrantedCount());
             response.append(" ");
@@ -102,7 +102,7 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
             String lockKey = entry.getKey();
             ServerLockRequest request = entry.getValue();
 
-            Lock lock = this.syncCore.getSyncLock(lockKey);
+            Lock lock = this.lockEngine.getSyncLock(lockKey);
             
             //Cancel the request in case it has not been granted yet
             lock.cancelRequest(request);
@@ -140,7 +140,7 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
         request.setTimeout(timeout);
         request.setExpireTimeout(expireTimeout);
 
-        Lock l = syncCore.getSyncLock(lockKey);
+        Lock l = lockEngine.getSyncLock(lockKey);
         l.requestLock(request);
     }
 
@@ -161,7 +161,7 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
     }
     
     private void statusByKey(Channel channel) {
-        for(Lock l: this.syncCore.getByKey()){
+        for(Lock l: this.lockEngine.getByKey()){
             status(channel, l.getLockKey());
         }
     }
