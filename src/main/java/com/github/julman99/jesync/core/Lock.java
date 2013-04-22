@@ -160,6 +160,7 @@ public class Lock {
     private synchronized boolean releaseLock(LockRequest request) {
         if (this.locksGranted.containsKey(request)) {
             this.locksGranted.remove(request);
+            request.lockReleased(lockKey);
             if (request.getMaxConcurrent() == this.lockedMaxConcurrent) {
                 this.buildLockedMaxConcurrent();
             }

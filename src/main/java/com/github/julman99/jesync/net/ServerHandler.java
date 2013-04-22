@@ -1,5 +1,6 @@
 package com.github.julman99.jesync.net;
 
+import com.github.julman99.jesync.core.AbstractLockRequest;
 import java.security.InvalidParameterException;
 import com.github.julman99.jesync.core.Lock;
 import com.github.julman99.jesync.core.LockEngine;
@@ -101,10 +102,10 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
      */
     private void releaseAllLocks() {
         //Release all lock requests
-        for (Map.Entry<String, ServerLockRequest> entry: this.lockRequests.entrySet()) {
+        for (Map.Entry<String, AbstractLockRequest> entry: this.lockRequests.entrySet()) {
 
             String lockKey = entry.getKey();
-            ServerLockRequest request = entry.getValue();
+            AbstractLockRequest request = entry.getValue();
 
             Lock lock = this.lockEngine.getSyncLock(lockKey);
             
@@ -117,6 +118,8 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
                 handle.release();
             }
         }
+        
+        this.lockRequests.clear();
     }
 
     /**
@@ -127,19 +130,47 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
      * @return If the LockRequest exists, it returns it, if not it creates a new
      * one
      */
-    private ServerLockRequest getLockRequest(Channel channel, String lockKey) {
-        ServerLockRequest res = lockRequests.get(lockKey);
+    private AbstractLockRequest getLockRequest(Channel channel, String lockKey) {
+        AbstractLockRequest res = lockRequests.get(lockKey);
 
         if (res == null) {
-            res = new ServerLockRequest(channel, this);
+            res = createLockRequest(channel, lockKey);
             lockRequests.put(lockKey, res);
         }
+        return res;
+    }
+    
+    private AbstractLockRequest createLockRequest(final Channel channel, final String lockKey){
+        AbstractLockRequest res = new AbstractLockRequest() {
+
+            @Override
+            protected void onLockGranted(LockHandle lockHandle) {
+                writeResponse(channel, "GRANTED", lockHandle.getLockKey(), lockHandle);
+            }
+
+            @Override
+            protected void onLockTimeout(String lock, int seconds) {
+                writeResponse(channel, "TIMEOUT", lock, null);
+            }
+
+            @Override
+            protected void onLockReleased(String lock) {
+                writeResponse(channel, "RELEASED", lock, null);
+                lockRequests.remove(lock);
+            }
+
+            @Override
+            protected void onLockExpired(String lock) {
+                writeResponse(channel, "EXPIRED", lock, null);
+            }
+        };
+        
         return res;
     }
 
     //*************** SERVER COMMANDS ******************//
     private void lock(Channel channel, String lockKey, int maxConcurrent, int timeout, int expireTimeout) {
-        ServerLockRequest request = getLockRequest(channel, lockKey);
+        AbstractLockRequest request = getLockRequest(channel, lockKey);
         request.setMaxConcurrent(maxConcurrent);
         request.setTimeout(timeout);
         request.setExpireTimeout(expireTimeout);
@@ -149,11 +180,11 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
     }
 
     private void release(Channel channel, String lockKey) {
-        ServerLockRequest request = getLockRequest(channel, lockKey);
+        AbstractLockRequest request = getLockRequest(channel, lockKey);
         LockHandle handle;
         if (request != null && (handle=request.getLockHandle())!=null && handle.release()) {
             lockRequests.remove(lockKey);
-            this.writeResponse(channel, "RELEASED",lockKey , handle);
+            //this.writeResponse(channel, "RELEASED",lockKey , handle);
 
         } else {
             this.writeResponse(channel, "NOT_RELEASED", lockKey, null);
