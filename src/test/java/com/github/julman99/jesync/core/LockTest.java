@@ -71,6 +71,27 @@ public class LockTest {
         
         request.getLockHandle().release(); //housekeeping
     }
+    
+    /**
+     * Test of requestLock method, of class Lock.
+     */
+    @Test
+    public void testRequestTwoTimes() throws InterruptedException {
+        String lockKey="TEST-A";
+        Lock instance = this.lockEngine.getSyncLock(lockKey);
+        
+        //Test single lock
+        SynchronousLockRequest request = new SynchronousLockRequest(1, 0, 120);
+        instance.requestLock(request);
+        SynchronousLockRequest.LockState result = request.waitForRequest();
+        assertEquals(result, SynchronousLockRequest.LockState.LOCKED);
+        
+        instance.requestLock(request);
+        SynchronousLockRequest.LockState result2 = request.waitForRequest();
+        assertEquals(result2, SynchronousLockRequest.LockState.LOCKED);
+        
+        request.getLockHandle().release(); //housekeeping
+    }
 
     /**
      * Test of getLockKey method, of class Lock.
