@@ -1,6 +1,9 @@
 ###JESync 0.8 RC
 
 - Adds status-by-key command
+- Adds status-by-grants command
+- Adds status-by-requests command
+- When a lock key is not used anymore all references from memory are cleaned
 
 ###JESync 0.7 RC
 

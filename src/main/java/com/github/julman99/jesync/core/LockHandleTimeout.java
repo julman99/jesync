@@ -2,7 +2,6 @@ package com.github.julman99.jesync.core;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import sun.jvmstat.perfdata.monitor.protocol.local.LocalEventTimer;
 
 /**
  *

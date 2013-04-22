@@ -1,4 +1,4 @@
-#JESync 0.7 RC
+#JESync 0.8 RC
 Download [here](http://goo.gl/u784D)
 
 ##1. Introduction
