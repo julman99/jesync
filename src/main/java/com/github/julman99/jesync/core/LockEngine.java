@@ -1,9 +1,11 @@
 package com.github.julman99.jesync.core;
 
+import com.google.common.collect.MapMaker;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Map;
 
 /**
  * Engine that generates Lock objects for a desired key
@@ -11,10 +13,10 @@ import java.util.Comparator;
  */
 public final class LockEngine {
     
-    private final LocksMap table;
+    private final Map<String, Lock> table;
     
     public LockEngine(){
-        this.table=new LocksMap();
+        this.table = new MapMaker().weakValues().makeMap();
     }
     
     public final Lock getSyncLock(String key){

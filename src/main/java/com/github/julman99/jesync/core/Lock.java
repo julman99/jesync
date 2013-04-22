@@ -75,7 +75,9 @@ public class Lock {
             this.grantLock(request);
         } else if(this.lockRequests.add(request)) {
             this.processRequestList();
-            this.lockRequestTimeout.scheduleTimeout(request);
+            if(!locksGranted.containsKey(request)){
+                this.lockRequestTimeout.scheduleTimeout(request);
+            }
         }
 
     }
