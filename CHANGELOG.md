@@ -1,3 +1,8 @@
+###JESync 0.8.1 RC
+
+- Fixes: When a client was disconnected and had multiple locks, all of the locks might no be released
+  https://github.com/julman99/jesync/issues/2
+
 ###JESync 0.8 RC
 
 - Adds status-by-key command
