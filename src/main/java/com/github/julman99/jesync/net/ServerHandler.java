@@ -88,22 +88,28 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
     }
 
     final void writeResponse(Channel channel, String msg, String lockKey, LockHandle lockHandle) {
-        StringBuilder response=new StringBuilder(msg);
-        if (lockKey != null) {
-            Lock lock = lockEngine.getSyncLock(lockKey);
-            response.append(" ");
-            response.append(lock.getCurrentGrantedCount());
-            response.append(" ");
-            response.append(lock.getCurrentRequestCount());
-            response.append(" ");
-            response.append(lockKey);
-            if(lockHandle!=null){
+        try {
+            StringBuilder response = new StringBuilder(msg);
+            if (lockKey != null) {
+                Lock lock = lockEngine.getSyncLock(lockKey);
                 response.append(" ");
-                response.append(lockHandle.getSecondsRemaining());
+                response.append(lock.getCurrentGrantedCount());
+                response.append(" ");
+                response.append(lock.getCurrentRequestCount());
+                response.append(" ");
+                response.append(lockKey);
+                if (lockHandle != null) {
+                    response.append(" ");
+                    response.append(lockHandle.getSecondsRemaining());
+                }
+            }
+            response.append("\n");
+            channel.write(response.toString());
+        } catch (Exception ex) {
+            if(ex instanceof ClosedChannelException) {
+                this.releaseAllLocks();
             }
         }
-        response.append("\n");
-        channel.write(response.toString());
     }
 
     /**
@@ -165,12 +171,14 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
 
             @Override
             protected void onLockReleased(String lock) {
-                writeResponse(channel, "RELEASED", lock, null);
                 lockRequests.remove(lock);
+                writeResponse(channel, "RELEASED", lock, null);
+
             }
 
             @Override
             protected void onLockExpired(String lock) {
+                lockRequests.remove(lock);
                 writeResponse(channel, "EXPIRED", lock, null);
             }
         };
