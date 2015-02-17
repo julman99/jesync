@@ -1,10 +1,11 @@
 package com.github.julman99.jesync;
 
-import java.util.Arrays;
-import java.util.Collection;
 import com.github.julman99.jesync.net.Server;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  *
@@ -31,7 +32,7 @@ public class JESync {
         if(options.has("h")){
             parser.printHelpOn(System.out);
         }else if(options.has("v")){
-            System.out.println("JESync 0.8.1 RC");
+            System.out.println("JESync 0.8.2 RC");
             System.out.println("https://github.com/julman99/JESync");
             System.out.println("Copyright (c) 2012 Julio Viera");
         }else{

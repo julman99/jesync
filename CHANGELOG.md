@@ -1,3 +1,7 @@
+###JESync 0.8.2 RC
+
+- Fixes a problem where expired locks could throw unhandled exceptions if the client was disconnected
+
 ###JESync 0.8.1 RC
 
 - Fixes: When a client was disconnected and had multiple locks, all of the locks might no be released
