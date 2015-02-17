@@ -1,12 +1,14 @@
 package com.github.julman99.jesync.net;
 
 import com.github.julman99.jesync.core.AbstractLockRequest;
-import java.security.InvalidParameterException;
 import com.github.julman99.jesync.core.Lock;
 import com.github.julman99.jesync.core.LockEngine;
 import com.github.julman99.jesync.core.LockHandle;
-import java.util.Map;
 import org.jboss.netty.channel.*;
+
+import java.nio.channels.ClosedChannelException;
+import java.security.InvalidParameterException;
+import java.util.Map;
 
 /**
  * Class responsible for getting the messages from the client and invoking the
@@ -71,6 +73,14 @@ public final class ServerHandler extends SimpleChannelUpstreamHandler {
     public final void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         super.channelDisconnected(ctx, e);
         this.releaseAllLocks();
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+        super.exceptionCaught(ctx, e);
+        if(e instanceof ClosedChannelException) {
+            this.releaseAllLocks();
+        }
     }
 
     final void writeResponse(Channel channel, String msg) {
